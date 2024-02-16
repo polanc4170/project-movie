@@ -57,7 +57,7 @@ public class MovieService {
 		Optional<Movie> dbMovie = repository.findByImdbId(movie.getImdbId());
 
 		if (dbMovie.isEmpty()) {
-			throw new MovieAlreadyExistsException(
+			throw new MovieNotFoundException(
 				"Movie IMDB_ID '%d' does not exist.".formatted(movie.getImdbId())
 			);
 		}

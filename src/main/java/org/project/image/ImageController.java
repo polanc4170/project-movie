@@ -35,7 +35,7 @@ public class ImageController {
 	//
 
 	@GetMapping(path = "")
-	public List<ImageDTO> getAllMovies () {
+	public List<ImageDTO> getAllImages () {
 		return service.getAllImages()
 			.stream()
 			.map(mapper::toDTO)

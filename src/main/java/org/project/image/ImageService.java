@@ -57,7 +57,7 @@ public class ImageService {
 		Optional<Image> dbImage = repository.findByUuid(image.getUuid());
 
 		if (dbImage.isEmpty()) {
-			throw new ImageAlreadyExistsException(
+			throw new ImageNotFoundException(
 				"Image UUID '%s' does not exist.".formatted(image.getUuid())
 			);
 		}
