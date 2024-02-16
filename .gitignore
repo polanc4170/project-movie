@@ -1,0 +1,16 @@
+# IDEA
+.idea/
+
+# Maven
+target/
+
+# Archive
+*.7z
+*.jar
+*.rar
+*.tar
+*.tar.gz
+*.zip
+
+# Java
+*.class
