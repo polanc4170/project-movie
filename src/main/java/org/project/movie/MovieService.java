@@ -13,6 +13,26 @@ public class MovieService {
 
 	private final MovieRepository repository;
 
+	//
+	// Create
+	//
+
+	public void addMovie (Movie movie) {
+		Optional<Movie> dbMovie = repository.findByImdbId(movie.getImdbId());
+
+		if (dbMovie.isPresent()) {
+			throw new MovieAlreadyExistsException(
+				"Movie IMDB_ID '%d' already exists.".formatted(movie.getImdbId())
+			);
+		}
+
+		repository.save(movie);
+	}
+
+	//
+	// Read
+	//
+
 	public List<Movie> getAllMovies () {
 		return repository.findAll();
 	}
@@ -29,16 +49,41 @@ public class MovieService {
 		return dbMovie.get();
 	}
 
-	public void addNewMovie (Movie movie) {
+	//
+	// Update
+	//
+
+	public Movie updateMovie (Movie movie) {
 		Optional<Movie> dbMovie = repository.findByImdbId(movie.getImdbId());
 
-		if (dbMovie.isPresent()) {
+		if (dbMovie.isEmpty()) {
 			throw new MovieAlreadyExistsException(
-				"Movie IMDB_ID '%d' already exists.".formatted(movie.getImdbId())
+				"Movie IMDB_ID '%d' does not exist.".formatted(movie.getImdbId())
 			);
 		}
 
-		repository.save(movie);
+		dbMovie.get().setTitle(movie.getDescription());
+		dbMovie.get().setYear(movie.getYear());
+		dbMovie.get().setDescription(movie.getDescription());
+		dbMovie.get().setImages(movie.getImages());
+
+		return repository.save(dbMovie.get());
+	}
+
+	//
+	// Delete
+	//
+
+	public void deleteMovieByImdbId (Long id) {
+		Optional<Movie> dbMovie = repository.findByImdbId(id);
+
+		if (dbMovie.isEmpty()) {
+			throw new MovieNotFoundException(
+				"Movie IMDB_ID '%d' does not exist.".formatted(id)
+			);
+		}
+
+		repository.delete(dbMovie.get());
 	}
 
 }
