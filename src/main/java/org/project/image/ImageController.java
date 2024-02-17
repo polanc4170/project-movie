@@ -1,5 +1,6 @@
 package org.project.image;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,8 +25,12 @@ public class ImageController {
 	//
 
 	@PostMapping(path = "")
-	public void addImage (@RequestBody ImageDTO image) {
+	public ResponseEntity<?> addImage (@RequestBody ImageDTO image) {
 		service.addImage(image);
+
+		return ResponseEntity
+			.status(HttpStatus.CREATED)
+			.body(null);
 	}
 
 	//
@@ -34,12 +39,16 @@ public class ImageController {
 
 	@GetMapping(path = "")
 	public ResponseEntity<?> getImages () {
-		return ResponseEntity.ok(service.getImages());
+		return ResponseEntity
+			.status(HttpStatus.OK)
+			.body(service.getImages());
 	}
 
 	@GetMapping(path = "/{id}")
 	public ResponseEntity<?> getImageById (@PathVariable String id) {
-		return ResponseEntity.ok(service.getImageById(id));
+		return ResponseEntity
+			.status(HttpStatus.OK)
+			.body(service.getImageById(id));
 	}
 
 	//
@@ -48,7 +57,9 @@ public class ImageController {
 
 	@PutMapping(path = "/{id}")
 	public ResponseEntity<?> updateImageById (@PathVariable String id, @RequestBody ImageDTO image) {
-		return ResponseEntity.ok(service.updateImageById(id, image));
+		return ResponseEntity
+			.status(HttpStatus.OK)
+			.body(service.updateImageById(id, image));
 	}
 
 	//
@@ -56,13 +67,21 @@ public class ImageController {
 	//
 
 	@DeleteMapping(path = "")
-	public void deleteImages () {
+	public ResponseEntity<?> deleteImages () {
 		service.deleteImages();
+
+		return ResponseEntity
+			.status(HttpStatus.OK)
+			.body(null);
 	}
 
 	@DeleteMapping(path = "/{id}")
-	public void deleteImageById (@PathVariable String id) {
+	public ResponseEntity<?> deleteImageById (@PathVariable String id) {
 		service.deleteImageById(id);
+
+		return ResponseEntity
+			.status(HttpStatus.OK)
+			.body(null);
 	}
 
 }

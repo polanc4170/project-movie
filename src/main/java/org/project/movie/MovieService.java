@@ -3,9 +3,7 @@ package org.project.movie;
 import org.project.image.ImageMapper;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -48,7 +46,33 @@ public class MovieService {
 	}
 
 	public List<MovieDTO> getMovies (Map<String, String> parameters) {
-		return repository.findAll().stream().map(movieMapper::toDTO).toList();
+		List<Movie> movies = null;
+		String pattern     = null;
+
+		if (parameters.containsKey("pattern")) {
+			pattern = parameters.get("pattern");
+		}
+
+		if (parameters.containsKey("startYear") || parameters.containsKey("endYear")) {
+			Integer startYear = Integer.parseInt(parameters.getOrDefault("startYear",    "0"));
+			Integer endYear   = Integer.parseInt(parameters.getOrDefault(  "endYear", "9999"));
+
+			if (pattern != null) {
+				movies = repository.filterByPatternAndYear(pattern, startYear, endYear);
+			}
+			else {
+				movies = repository.filterByYear(startYear, endYear);
+			}
+		}
+		else {
+			if (pattern == null) {
+				return getMovies();
+			}
+
+			movies = repository.filterByPattern(pattern);
+		}
+
+		return movies.stream().map(movieMapper::toDTO).toList();
 	}
 
 	public List<MovieDTO> getMovies () {

@@ -12,14 +12,14 @@ import lombok.AllArgsConstructor;
 @Component
 public class MovieMapper {
 
-	private ImageMapper mapper;
+	private final ImageMapper mapper;
 
 	public MovieDTO toDTO (Movie movie) {
 		return new MovieDTO(
 			movie.getImdbId(),
 			movie.getTitle(),
-			movie.getDescription(),
 			movie.getYear(),
+			movie.getDescription(),
 			movie.getImages()
 				.stream()
 				.map(mapper::toDTO)
@@ -32,8 +32,8 @@ public class MovieMapper {
 
 		movie.setImdbId(dto.imdbId());
 		movie.setTitle(dto.title());
-		movie.setDescription(dto.description());
 		movie.setYear(dto.year());
+		movie.setDescription(dto.description());
 		movie.setImages(dto.images()
 			.stream()
 			.map(mapper::toImage)

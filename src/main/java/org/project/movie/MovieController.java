@@ -1,5 +1,7 @@
 package org.project.movie;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,8 +29,12 @@ public class MovieController {
 	//
 
 	@PostMapping(path = "")
-	public void addMovie (@RequestBody MovieDTO movie) {
+	public ResponseEntity<?> addMovie (@RequestBody MovieDTO movie) {
 		service.addMovie(movie);
+
+		return ResponseEntity
+			.status(HttpStatus.CREATED)
+			.body(null);
 	}
 
 	//
@@ -33,13 +42,29 @@ public class MovieController {
 	//
 
 	@GetMapping(path = "")
-	public ResponseEntity<?> getMovies () {
-		return ResponseEntity.ok(service.getMovies());
+	public ResponseEntity<?> getMovies (@RequestParam Map<String, String> parameters) {
+
+		if (parameters == null || parameters.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.OK).body(service.getMovies());
+		}
+
+		if (parameters.containsKey("page")) {
+			return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(service.getMovies(PageRequest.of(
+					Integer.parseInt(parameters.getOrDefault("page", "0")),
+					Integer.parseInt(parameters.getOrDefault("size", "10"))
+				)));
+		}
+
+		return ResponseEntity.status(HttpStatus.OK).body(service.getMovies(parameters));
 	}
 
 	@GetMapping(path = "/{id}")
 	public ResponseEntity<?> getMovieById (@PathVariable Long id) {
-		return ResponseEntity.ok(service.getMovieById(id));
+		return ResponseEntity
+			.status(HttpStatus.OK)
+			.body(service.getMovieById(id));
 	}
 
 	//
@@ -48,7 +73,9 @@ public class MovieController {
 
 	@PutMapping(path = "/{id}")
 	public ResponseEntity<?> updateMovieById (@PathVariable Long id, @RequestBody MovieDTO movie) {
-		return ResponseEntity.ok(service.updateMovieById(id, movie));
+		return ResponseEntity
+			.status(HttpStatus.OK)
+			.body(service.updateMovieById(id, movie));
 	}
 
 	//
@@ -56,13 +83,21 @@ public class MovieController {
 	//
 
 	@DeleteMapping(path = "")
-	public void deleteMovies () {
+	public ResponseEntity<?> deleteMovies () {
 		service.deleteMovies();
+
+		return ResponseEntity
+			.status(HttpStatus.OK)
+			.body(null);
 	}
 
 	@DeleteMapping(path = "/{id}")
-	public void deleteMovieById (@PathVariable Long id) {
+	public ResponseEntity<?> deleteMovieById (@PathVariable Long id) {
 		service.deleteMovieById(id);
+
+		return ResponseEntity
+			.status(HttpStatus.OK)
+			.body(null);
 	}
 
 }
