@@ -43,7 +43,6 @@ public class MovieController {
 
 	@GetMapping(path = "")
 	public ResponseEntity<?> getMovies (@RequestParam Map<String, String> parameters) {
-
 		if (parameters == null || parameters.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.OK).body(service.getMovies());
 		}
