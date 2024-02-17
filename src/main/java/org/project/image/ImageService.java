@@ -12,75 +12,84 @@ import lombok.RequiredArgsConstructor;
 public class ImageService {
 
 	private final ImageRepository repository;
+	private final ImageMapper     mapper;
 
 	//
 	// Create
 	//
 
-	public void addImage (Image image) {
-		Optional<Image> dbImage = repository.findByUuid(image.getUuid());
+	public void addImage (ImageDTO image) {
+		Optional<Image> dbOptImage = repository.findByUuid(image.uuid());
 
-		if (dbImage.isPresent()) {
+		if (dbOptImage.isPresent()) {
 			throw new ImageAlreadyExistsException(
-				"Image UUID '%s' already exists.".formatted(image.getUuid())
+				"Image UUID '%s' already exists.".formatted(image.uuid())
 			);
 		}
 
-		repository.save(image);
+		repository.save(mapper.toImage(image));
 	}
 
 	//
 	// Read
 	//
 
-	public List<Image> getAllImages () {
-		return repository.findAll();
+	public List<ImageDTO> getImages () {
+		return repository.findAll().stream().map(mapper::toDTO).toList();
 	}
 
-	public Image getImageByUuid (String id) {
-		Optional<Image> dbImage = repository.findByUuid(id);
+	public ImageDTO getImageById (String id) {
+		Optional<Image> dbOptImage = repository.findByUuid(id);
 
-		if (dbImage.isEmpty()) {
+		if (dbOptImage.isEmpty()) {
 			throw new ImageNotFoundException(
 				"Image UUID '%s' does not exist.".formatted(id)
 			);
 		}
 
-		return dbImage.get();
+		return mapper.toDTO(dbOptImage.get());
 	}
 
 	//
 	// Update
 	//
 
-	public Image updateImage (Image image) {
-		Optional<Image> dbImage = repository.findByUuid(image.getUuid());
+	public ImageDTO updateImageById (String id, ImageDTO image) {
+		Optional<Image> dbOptImage = repository.findByUuid(id);
 
-		if (dbImage.isEmpty()) {
+		if (dbOptImage.isEmpty()) {
 			throw new ImageNotFoundException(
-				"Image UUID '%s' does not exist.".formatted(image.getUuid())
+				"Image UUID '%s' does not exist.".formatted(id)
 			);
 		}
 
-		dbImage.get().setBytes(image.getBytes());
+		Image dbImage = dbOptImage.get();
 
-		return repository.save(dbImage.get());
+		if (image.bytes() != null && image.bytes().length > 0) {
+			dbImage.setBytes(image.bytes());
+		}
+
+		return mapper.toDTO(repository.save(dbImage));
 	}
 
 	//
 	// Delete
 	//
 
-	public void deleteImageByUuid (String id) {
-		Optional<Image> dbImage = repository.findByUuid(id);
+	public void deleteImages () {
+		repository.deleteAll();
+	}
 
-		if (dbImage.isEmpty()) {
+	public void deleteImageById (String id) {
+		Optional<Image> dbOptImage = repository.findByUuid(id);
+
+		if (dbOptImage.isEmpty()) {
 			throw new ImageNotFoundException(
 				"Image UUID '%s' does not exist.".formatted(id)
 			);
 		}
 
-		repository.delete(dbImage.get());
+		repository.delete(dbOptImage.get());
 	}
 
 }
