@@ -4,8 +4,6 @@ import org.project.image.ImageMapper;
 
 import org.springframework.stereotype.Component;
 
-import java.util.stream.Collectors;
-
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -23,7 +21,7 @@ public class MovieMapper {
 			movie.getImages()
 				.stream()
 				.map(mapper::toDTO)
-				.collect(Collectors.toSet())
+				.toList()
 		);
 	}
 
@@ -37,7 +35,7 @@ public class MovieMapper {
 		movie.setImages(dto.images()
 			.stream()
 			.map(mapper::toImage)
-			.collect(Collectors.toSet())
+			.toList()
 		);
 
 		return movie;

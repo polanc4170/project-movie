@@ -1,16 +1,13 @@
 package org.project.movie;
 
-import org.project.container.PostgresDocker;
 import org.project.image.Image;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Set;
+import java.util.List;
 
-@SpringBootTest
-public class MovieTest extends PostgresDocker {
+public class MovieTest {
 
 	@Test
 	public void createMovieNoArgs () {
@@ -27,7 +24,7 @@ public class MovieTest extends PostgresDocker {
 
 	@Test
 	public void createMovieAllArgs () {
-		Movie movie = new Movie(null, 1L, "Title", 2000, "Description", Set.of(
+		Movie movie = new Movie(null, 1L, "Title", 2000, "Description", List.of(
 			new Image(null, "uuid-0", new Byte[8]),
 			new Image(null, "uuid-1", new Byte[8])
 		));
@@ -51,7 +48,7 @@ public class MovieTest extends PostgresDocker {
 		movie.setTitle("Title");
 		movie.setYear(2000);
 		movie.setDescription("Description");
-		movie.setImages(Set.of(
+		movie.setImages(List.of(
 			new Image(null, "uuid-0", new Byte[8]),
 			new Image(null, "uuid-1", new Byte[8])
 		));

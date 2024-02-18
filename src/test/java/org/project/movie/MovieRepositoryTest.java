@@ -9,10 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @DataJpaTest
 public class MovieRepositoryTest extends PostgresDocker {
@@ -37,7 +35,7 @@ public class MovieRepositoryTest extends PostgresDocker {
 
 	@Test
 	public void findByIMDbPresent () {
-		Movie movie = new Movie(null, 0L, "Title", 2000, "Description", Set.of());
+		Movie movie = new Movie(null, 0L, "Title", 2000, "Description", List.of());
 
 		repository.save(movie);
 
@@ -65,15 +63,15 @@ public class MovieRepositoryTest extends PostgresDocker {
 		repository.deleteAll();
 
 		repository.saveAll(List.of(
-			new Movie(null, 1L, "Star Wars I",   1999, "Description", Set.of()),
-			new Movie(null, 2L, "Star Wars II",  2002, "Description", Set.of()),
-			new Movie(null, 3L, "Star Wars III", 2005, "Description", Set.of()),
-			new Movie(null, 4L, "Star Wars IV",  1977, "Description", Set.of()),
-			new Movie(null, 5L, "Star Wars V",   1980, "Description", Set.of()),
-			new Movie(null, 6L, "Star Wars VI",  1983, "Description", Set.of()),
-			new Movie(null, 7L, "Terminator",    1984, "Description", Set.of()),
-			new Movie(null, 8L, "Terminator 2",  1991, "Description", Set.of()),
-			new Movie(null, 9L, "Terminator 3",  2003, "Description", Set.of())
+			new Movie(null, 1L, "Star Wars I",   1999, "Description", List.of()),
+			new Movie(null, 2L, "Star Wars II",  2002, "Description", List.of()),
+			new Movie(null, 3L, "Star Wars III", 2005, "Description", List.of()),
+			new Movie(null, 4L, "Star Wars IV",  1977, "Description", List.of()),
+			new Movie(null, 5L, "Star Wars V",   1980, "Description", List.of()),
+			new Movie(null, 6L, "Star Wars VI",  1983, "Description", List.of()),
+			new Movie(null, 7L, "Terminator",    1984, "Description", List.of()),
+			new Movie(null, 8L, "Terminator 2",  1991, "Description", List.of()),
+			new Movie(null, 9L, "Terminator 3",  2003, "Description", List.of())
 		));
 
 		Assertions.assertEquals(6, repository.filterByPattern("Star Wars" ).size());
@@ -97,15 +95,15 @@ public class MovieRepositoryTest extends PostgresDocker {
 		repository.deleteAll();
 
 		repository.saveAll(List.of(
-			new Movie(null, 1L, "Star Wars I",   1999, "Description", Set.of()),
-			new Movie(null, 2L, "Star Wars II",  2002, "Description", Set.of()),
-			new Movie(null, 3L, "Star Wars III", 2005, "Description", Set.of()),
-			new Movie(null, 4L, "Star Wars IV",  1977, "Description", Set.of()),
-			new Movie(null, 5L, "Star Wars V",   1980, "Description", Set.of()),
-			new Movie(null, 6L, "Star Wars VI",  1983, "Description", Set.of()),
-			new Movie(null, 7L, "Terminator",    1984, "Description", Set.of()),
-			new Movie(null, 8L, "Terminator 2",  1991, "Description", Set.of()),
-			new Movie(null, 9L, "Terminator 3",  2003, "Description", Set.of())
+			new Movie(null, 1L, "Star Wars I",   1999, "Description", List.of()),
+			new Movie(null, 2L, "Star Wars II",  2002, "Description", List.of()),
+			new Movie(null, 3L, "Star Wars III", 2005, "Description", List.of()),
+			new Movie(null, 4L, "Star Wars IV",  1977, "Description", List.of()),
+			new Movie(null, 5L, "Star Wars V",   1980, "Description", List.of()),
+			new Movie(null, 6L, "Star Wars VI",  1983, "Description", List.of()),
+			new Movie(null, 7L, "Terminator",    1984, "Description", List.of()),
+			new Movie(null, 8L, "Terminator 2",  1991, "Description", List.of()),
+			new Movie(null, 9L, "Terminator 3",  2003, "Description", List.of())
 		));
 
 		Assertions.assertEquals(1, repository.filterByYear(1970, 1980).size());
@@ -113,4 +111,5 @@ public class MovieRepositoryTest extends PostgresDocker {
 		Assertions.assertEquals(6, repository.filterByYear(1970, 2000).size());
 		Assertions.assertEquals(9, repository.filterByYear(1970, 2010).size());
 	}
+
 }

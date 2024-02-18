@@ -1,7 +1,5 @@
 package org.project.movie;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,10 +10,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 @RequiredArgsConstructor
 @RestController
@@ -28,75 +33,83 @@ public class MovieController {
 	// Create
 	//
 
-	@PostMapping(path = "")
-	public ResponseEntity<?> addMovie (@RequestBody MovieDTO movie) {
-		service.addMovie(movie);
+	@PostMapping(path = "", produces = "application/json", consumes = "application/json")
+	public ResponseEntity<Object> addMovie (@RequestBody MovieDTO movie) {
+		try {
+			service.addMovie(movie);
 
-		return ResponseEntity
-			.status(HttpStatus.CREATED)
-			.body(null);
+			URI location = ServletUriComponentsBuilder
+				.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(movie.imdbId())
+				.toUri();
+
+			return ResponseEntity.status(CREATED).location(location).build();
+		}
+		catch (MovieAlreadyExistsException exception) {
+			return ResponseEntity.status(CONFLICT).body(exception.getMessage());
+		}
 	}
 
 	//
 	// Read
 	//
 
-	@GetMapping(path = "")
-	public ResponseEntity<?> getMovies (@RequestParam Map<String, String> parameters) {
-		if (parameters == null || parameters.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.OK).body(service.getMovies());
+	@GetMapping(path = "", produces = "application/json")
+	public ResponseEntity<Object> getMovies (@RequestParam Map<String, String> parameters) {
+		try {
+			return ResponseEntity.status(OK).body(service.getMovies(parameters));
 		}
-
-		if (parameters.containsKey("page")) {
-			return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(service.getMovies(PageRequest.of(
-					Integer.parseInt(parameters.getOrDefault("page", "0")),
-					Integer.parseInt(parameters.getOrDefault("size", "10"))
-				)));
+		catch (Exception exception) {
+			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
 		}
-
-		return ResponseEntity.status(HttpStatus.OK).body(service.getMovies(parameters));
 	}
 
-	@GetMapping(path = "/{id}")
-	public ResponseEntity<?> getMovieById (@PathVariable Long id) {
-		return ResponseEntity
-			.status(HttpStatus.OK)
-			.body(service.getMovieById(id));
+	@GetMapping(path = "/{id}", produces = "application/json")
+	public ResponseEntity<Object> getMovieById (@PathVariable Long id) {
+		try {
+			return ResponseEntity.status(OK).body(service.getMovieById(id));
+		}
+		catch (MovieNotFoundException exception) {
+			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
+		}
 	}
 
 	//
 	// Update
 	//
 
-	@PutMapping(path = "/{id}")
-	public ResponseEntity<?> updateMovieById (@PathVariable Long id, @RequestBody MovieDTO movie) {
-		return ResponseEntity
-			.status(HttpStatus.OK)
-			.body(service.updateMovieById(id, movie));
+	@PutMapping(path = "/{id}", produces = "application/json", consumes = "application/json")
+	public ResponseEntity<Object> updateMovieById (@PathVariable Long id, @RequestBody MovieDTO movie) {
+		try {
+			return ResponseEntity.status(OK).body(service.updateMovieById(id, movie));
+		}
+		catch (MovieNotFoundException exception) {
+			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
+		}
 	}
 
 	//
 	// Delete
 	//
 
-	@DeleteMapping(path = "")
-	public ResponseEntity<?> deleteMovies () {
+	@DeleteMapping(path = "", produces = "application/json")
+	public ResponseEntity<Object> deleteMovies () {
 		service.deleteMovies();
 
-		return ResponseEntity
-			.status(HttpStatus.OK)
-			.body(null);
+		return ResponseEntity.status(OK).body(null);
 	}
 
-	@DeleteMapping(path = "/{id}")
-	public ResponseEntity<?> deleteMovieById (@PathVariable Long id) {
-		service.deleteMovieById(id);
+	@DeleteMapping(path = "/{id}", produces = "application/json")
+	public ResponseEntity<Object> deleteMovieById (@PathVariable Long id) {
+		try {
+			service.deleteMovieById(id);
 
-		return ResponseEntity
-			.status(HttpStatus.OK)
-			.body(null);
+			return ResponseEntity.status(OK).body(null);
+		}
+		catch (MovieNotFoundException exception) {
+			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
+		}
 	}
 
 }

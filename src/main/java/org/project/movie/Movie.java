@@ -4,8 +4,8 @@ import org.project.image.Image;
 
 import org.hibernate.annotations.NaturalId;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -47,6 +47,6 @@ public class Movie {
 	private String description;
 
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	private Set<Image> images = new HashSet<>();
+	private List<Image> images = new ArrayList<>();
 
 }
