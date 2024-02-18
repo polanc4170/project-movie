@@ -11,6 +11,7 @@ import org.project.movie.exception.MovieNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ public class MovieService {
 	// Create
 	//
 
+	@Transactional
 	public void addMovie (MovieDTO movie) {
 		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(movie.imdbId());
 
@@ -111,6 +113,18 @@ public class MovieService {
 	// Update
 	//
 
+	private void updateMovieImagesWithReplace (Movie movie, List<ImageDTO> imageDTOs) {
+		imageService.deleteImagesByImdbId(movie.getImdbId());
+
+		List<Image> array = new ArrayList<>(imageDTOs.size());
+
+		imageDTOs.forEach(
+			(imageDTO) -> array.add(imageService.addImage(imageDTO))
+		);
+
+		movie.setImages(array);
+	}
+
 	private void updateMovieImagesWithAdd (Movie movie, List<ImageDTO> imageDTOs) {
 		List<Image> images = new ArrayList<>(
 			movie.getImages()
@@ -125,6 +139,7 @@ public class MovieService {
 		movie.setImages(images);
 	}
 
+	@Transactional
 	public MovieDTO updateMovieByImdbId (Long imdbId, MovieDTO movie, ImageAction imageAction) {
 		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(imdbId);
 
@@ -149,11 +164,10 @@ public class MovieService {
 		}
 
 		if (movie.images() != null && !movie.images().isEmpty()) {
-			if (imageAction == ImageAction.ADD) {
-				updateMovieImagesWithAdd(dbMovie, movie.images());
-			}
-			else {
-				throw new ImageActionNotSupportedException(
+			switch (imageAction) {
+				case REPLACE -> updateMovieImagesWithReplace(dbMovie, movie.images());
+				case ADD     -> updateMovieImagesWithAdd(dbMovie, movie.images());
+				default      -> throw new ImageActionNotSupportedException(
 					"Image ACTION '%s' is not supported".formatted(imageAction.name())
 				);
 			}
@@ -162,6 +176,7 @@ public class MovieService {
 		return movieMapper.toDTO(movieRepository.save(dbMovie));
 	}
 
+	@Transactional
 	public MovieDTO updateMovieByImdbId (Long imdbId, MovieDTO movie) {
 		return updateMovieByImdbId(imdbId, movie, ImageAction.ADD);
 	}
@@ -170,11 +185,13 @@ public class MovieService {
 	// Delete
 	//
 
+	@Transactional
 	public void deleteMovies () {
 		imageService.deleteImages();
 		movieRepository.deleteAll();
 	}
 
+	@Transactional
 	public void deleteMovieByImdbId (Long imdbId) {
 		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(imdbId);
 

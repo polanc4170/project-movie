@@ -21,6 +21,8 @@ import org.mockito.stubbing.Answer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,8 +52,7 @@ public class MovieServiceTest {
 	}
 
 	private void mockito_ImageService_DeleteImages () {
-		Mockito.doAnswer(
-			(Answer <Void>) inv -> null
+		Mockito.doAnswer((Answer <Void>) inv -> null
 		).when(imageService).deleteImages();
 	}
 
@@ -107,39 +108,63 @@ public class MovieServiceTest {
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private void mockito_MovieRepository_FindAll (Movie [] movies) {
-		Mockito.when(repository.findAll()
-		).thenReturn(movies == null ? List.of() : List.of(movies));
-	}
-
-	@SuppressWarnings("SameParameterValue")
 	private void mockito_MovieRepository_FindAllPageable (Page<Movie> page) {
 		Mockito.when(repository.findAll(ArgumentMatchers.any(PageRequest.class))
 		).thenReturn(page == null ? Page.empty() : page);
 	}
 
 	@SuppressWarnings("SameParameterValue")
+	private void mockito_MovieRepository_FindAll (Movie [] movies) {
+		List<Movie> list;
+
+		if      (movies == null)     list = Collections.emptyList();
+		else if (movies.length == 0) list = Collections.emptyList();
+		else                         list = Arrays.asList(movies);
+
+		Mockito.when(repository.findAll()
+		).thenReturn(list);
+	}
+
+	@SuppressWarnings("SameParameterValue")
 	private void mockito_MovieRepository_FindByPatternAndYear (Movie [] movies) {
+		List<Movie> list;
+
+		if      (movies == null)     list = Collections.emptyList();
+		else if (movies.length == 0) list = Collections.emptyList();
+		else                         list = Arrays.asList(movies);
+
 		Mockito.when(repository.findByPatternAndYear(
 			ArgumentMatchers.anyString(),
 			ArgumentMatchers.anyInt(),
 			ArgumentMatchers.anyInt()
-		)).thenReturn(movies == null ? List.of() : List.of(movies));
+		)).thenReturn(list);
 	}
 
 	@SuppressWarnings("SameParameterValue")
 	private void mockito_MovieRepository_FindByYear (Movie [] movies) {
+		List<Movie> list;
+
+		if      (movies == null)     list = Collections.emptyList();
+		else if (movies.length == 0) list = Collections.emptyList();
+		else                         list = Arrays.asList(movies);
+
 		Mockito.when(repository.findByYear(
 			ArgumentMatchers.anyInt(),
 			ArgumentMatchers.anyInt()
-		)).thenReturn(movies == null ? List.of() : List.of(movies));
+		)).thenReturn(list);
 	}
 
 	@SuppressWarnings("SameParameterValue")
 	private void mockito_MovieRepository_FindByPattern (Movie [] movies) {
+		List<Movie> list;
+
+		if      (movies == null)     list = Collections.emptyList();
+		else if (movies.length == 0) list = Collections.emptyList();
+		else                         list = Arrays.asList(movies);
+
 		Mockito.when(repository.findByPattern(
 			ArgumentMatchers.anyString()
-		)).thenReturn(movies == null ? List.of() : List.of(movies));
+		)).thenReturn(list);
 	}
 
 	private void mockito_MovieRepository_DeleteAll () {
@@ -356,6 +381,30 @@ public class MovieServiceTest {
 		Assertions.assertEquals(movie.getYear(),          response.year());
 		Assertions.assertEquals(movie.getDescription(),   response.description());
 		Assertions.assertEquals(movie.getImages().size(), response.images().size());
+	}
+
+	@Test
+	public void updateMovieByImdbId_Success_ActionReplace () {
+		MovieDTO paramDTO = ObjectGenerator.randomMovieDTO();
+		Movie    movie    = ObjectGenerator.randomMovie();
+
+		mockito_MovieRepository_FindByImdbId(movie);
+		mockito_MovieRepository_Save();
+		mockito_MovieMapper_ToDTO();
+		mockito_ImageService_AddImage();
+
+		MovieDTO response = service.updateMovieByImdbId(
+			movie.getImdbId(),
+			paramDTO,
+			ImageAction.REPLACE
+		);
+
+		Assertions.assertNotNull(response);
+
+		Assertions.assertEquals(paramDTO.title(),         response.title());
+		Assertions.assertEquals(paramDTO.year(),          response.year());
+		Assertions.assertEquals(paramDTO.description(),   response.description());
+		Assertions.assertEquals(paramDTO.images().size(), response.images().size());
 	}
 
 	@Test

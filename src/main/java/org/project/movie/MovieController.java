@@ -1,6 +1,7 @@
 package org.project.movie;
 
 import org.project.image.exception.ImageAlreadyExistsException;
+import org.project.image.exception.ImageNotFoundException;
 import org.project.movie.exception.MovieAlreadyExistsException;
 import org.project.movie.exception.MovieNotFoundException;
 
@@ -53,7 +54,9 @@ public class MovieController {
 		catch (MovieAlreadyExistsException |
 			   ImageAlreadyExistsException exception
 		) {
-			return ResponseEntity.status(CONFLICT).body(exception.getMessage());
+			return ResponseEntity.status(CONFLICT).body(
+				exception.getMessage()
+			);
 		}
 	}
 
@@ -64,20 +67,28 @@ public class MovieController {
 	@GetMapping(path = "", produces = "application/json")
 	public ResponseEntity<Object> getMovies (@RequestParam Map<String, String> parameters) {
 		try {
-			return ResponseEntity.status(OK).body(service.getMovies(parameters));
+			return ResponseEntity.status(OK).body(
+				service.getMovies(parameters)
+			);
 		}
 		catch (Exception exception) {
-			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
+			return ResponseEntity.status(BAD_REQUEST).body(
+				exception.getMessage()
+			);
 		}
 	}
 
 	@GetMapping(path = "/{id}", produces = "application/json")
 	public ResponseEntity<Object> getMovieById (@PathVariable Long id) {
 		try {
-			return ResponseEntity.status(OK).body(service.getMovieByImdbId(id));
+			return ResponseEntity.status(OK).body(
+				service.getMovieByImdbId(id)
+			);
 		}
 		catch (MovieNotFoundException exception) {
-			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
+			return ResponseEntity.status(BAD_REQUEST).body(
+				exception.getMessage()
+			);
 		}
 	}
 
@@ -88,10 +99,16 @@ public class MovieController {
 	@PutMapping(path = "/{id}", produces = "application/json", consumes = "application/json")
 	public ResponseEntity<Object> updateMovieById (@PathVariable Long id, @RequestBody MovieDTO movie) {
 		try {
-			return ResponseEntity.status(OK).body(service.updateMovieByImdbId(id, movie));
+			return ResponseEntity.status(OK).body(
+				service.updateMovieByImdbId(id, movie)
+			);
 		}
-		catch (MovieNotFoundException exception) {
-			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
+		catch (MovieNotFoundException |
+			   ImageNotFoundException exception
+		) {
+			return ResponseEntity.status(BAD_REQUEST).body(
+				exception.getMessage()
+			);
 		}
 	}
 
@@ -103,7 +120,7 @@ public class MovieController {
 	public ResponseEntity<Object> deleteMovies () {
 		service.deleteMovies();
 
-		return ResponseEntity.status(OK).body(null);
+		return ResponseEntity.status(OK).build();
 	}
 
 	@DeleteMapping(path = "/{id}", produces = "application/json")
@@ -111,10 +128,12 @@ public class MovieController {
 		try {
 			service.deleteMovieByImdbId(id);
 
-			return ResponseEntity.status(OK).body(null);
+			return ResponseEntity.status(OK).build();
 		}
 		catch (MovieNotFoundException exception) {
-			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
+			return ResponseEntity.status(BAD_REQUEST).body(
+				exception.getMessage()
+			);
 		}
 	}
 
