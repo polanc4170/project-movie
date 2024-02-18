@@ -1,5 +1,9 @@
 package org.project.movie;
 
+import org.project.image.exception.ImageAlreadyExistsException;
+import org.project.movie.exception.MovieAlreadyExistsException;
+import org.project.movie.exception.MovieNotFoundException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +50,9 @@ public class MovieController {
 
 			return ResponseEntity.status(CREATED).location(location).build();
 		}
-		catch (MovieAlreadyExistsException exception) {
+		catch (MovieAlreadyExistsException |
+			   ImageAlreadyExistsException exception
+		) {
 			return ResponseEntity.status(CONFLICT).body(exception.getMessage());
 		}
 	}
@@ -68,7 +74,7 @@ public class MovieController {
 	@GetMapping(path = "/{id}", produces = "application/json")
 	public ResponseEntity<Object> getMovieById (@PathVariable Long id) {
 		try {
-			return ResponseEntity.status(OK).body(service.getMovieById(id));
+			return ResponseEntity.status(OK).body(service.getMovieByImdbId(id));
 		}
 		catch (MovieNotFoundException exception) {
 			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
@@ -82,7 +88,7 @@ public class MovieController {
 	@PutMapping(path = "/{id}", produces = "application/json", consumes = "application/json")
 	public ResponseEntity<Object> updateMovieById (@PathVariable Long id, @RequestBody MovieDTO movie) {
 		try {
-			return ResponseEntity.status(OK).body(service.updateMovieById(id, movie));
+			return ResponseEntity.status(OK).body(service.updateMovieByImdbId(id, movie));
 		}
 		catch (MovieNotFoundException exception) {
 			return ResponseEntity.status(BAD_REQUEST).body(exception.getMessage());
@@ -103,7 +109,7 @@ public class MovieController {
 	@DeleteMapping(path = "/{id}", produces = "application/json")
 	public ResponseEntity<Object> deleteMovieById (@PathVariable Long id) {
 		try {
-			service.deleteMovieById(id);
+			service.deleteMovieByImdbId(id);
 
 			return ResponseEntity.status(OK).body(null);
 		}

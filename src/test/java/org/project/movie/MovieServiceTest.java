@@ -1,8 +1,12 @@
 package org.project.movie;
 
-import org.project.image.Image;
+import org.project.ObjectGenerator;
+import org.project.image.ImageAction;
 import org.project.image.ImageDTO;
-import org.project.image.ImageMapper;
+import org.project.image.ImageService;
+import org.project.image.exception.ImageActionNotSupportedException;
+import org.project.movie.exception.MovieAlreadyExistsException;
+import org.project.movie.exception.MovieNotFoundException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,11 +21,9 @@ import org.mockito.stubbing.Answer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @ExtendWith(MockitoExtension.class)
 public class MovieServiceTest {
@@ -30,13 +32,125 @@ public class MovieServiceTest {
 	private MovieService service;
 
 	@Mock
+	private MovieRepository repository;
+
+	@Mock
+	private ImageService imageService;
+
+	@Mock
 	private MovieMapper movieMapper;
 
-	@Mock
-	private ImageMapper imageMapper;
+	//
+	// Private mockito callers
+	//
 
-	@Mock
-	private MovieRepository repository;
+	private void mockito_ImageService_AddImage () {
+		Mockito.when(imageService.addImage(ArgumentMatchers.any(ImageDTO.class))
+		).thenReturn(ObjectGenerator.randomImage());
+	}
+
+	private void mockito_ImageService_DeleteImages () {
+		Mockito.doAnswer(
+			(Answer <Void>) inv -> null
+		).when(imageService).deleteImages();
+	}
+
+	private void mockito_MovieMapper_ToMovie () {
+		Mockito.when(
+			movieMapper.toMovie(
+				ArgumentMatchers.any(MovieDTO.class)
+			)
+		).then((Answer<Movie>) inv -> {
+			MovieDTO movieDTO = inv.getArgument(0, MovieDTO.class);
+
+			return new Movie(
+				null,
+				movieDTO.imdbId(),
+				movieDTO.title(),
+				movieDTO.year(),
+				movieDTO.description(),
+				movieDTO.images().stream().map(
+					ObjectGenerator::of
+				).toList()
+			);
+		});
+	}
+
+	private void mockito_MovieMapper_ToDTO () {
+		Mockito.when(
+			movieMapper.toDTO(
+				ArgumentMatchers.any(Movie.class)
+			)
+		).then((Answer<MovieDTO>) inv -> {
+			Movie movie = inv.getArgument(0, Movie.class);
+
+			return new MovieDTO(
+				movie.getImdbId(),
+				movie.getTitle(),
+				movie.getYear(),
+				movie.getDescription(),
+				movie.getImages().stream().map(
+					ObjectGenerator::of
+				).toList()
+			);
+		});
+	}
+
+	private void mockito_MovieRepository_FindByImdbId (Movie movie) {
+		Mockito.when(repository.findByImdbId(ArgumentMatchers.anyLong())
+		).thenReturn(movie == null ? Optional.empty() : Optional.of(movie));
+	}
+
+	private void mockito_MovieRepository_Save () {
+		Mockito.when(repository.save(ArgumentMatchers.any(Movie.class))
+		).then(AdditionalAnswers.returnsFirstArg());
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private void mockito_MovieRepository_FindAll (Movie [] movies) {
+		Mockito.when(repository.findAll()
+		).thenReturn(movies == null ? List.of() : List.of(movies));
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private void mockito_MovieRepository_FindAllPageable (Page<Movie> page) {
+		Mockito.when(repository.findAll(ArgumentMatchers.any(PageRequest.class))
+		).thenReturn(page == null ? Page.empty() : page);
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private void mockito_MovieRepository_FindByPatternAndYear (Movie [] movies) {
+		Mockito.when(repository.findByPatternAndYear(
+			ArgumentMatchers.anyString(),
+			ArgumentMatchers.anyInt(),
+			ArgumentMatchers.anyInt()
+		)).thenReturn(movies == null ? List.of() : List.of(movies));
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private void mockito_MovieRepository_FindByYear (Movie [] movies) {
+		Mockito.when(repository.findByYear(
+			ArgumentMatchers.anyInt(),
+			ArgumentMatchers.anyInt()
+		)).thenReturn(movies == null ? List.of() : List.of(movies));
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private void mockito_MovieRepository_FindByPattern (Movie [] movies) {
+		Mockito.when(repository.findByPattern(
+			ArgumentMatchers.anyString()
+		)).thenReturn(movies == null ? List.of() : List.of(movies));
+	}
+
+	private void mockito_MovieRepository_DeleteAll () {
+		Mockito.doAnswer((Answer <Void>) inv -> null
+		).when(repository).deleteAll();
+	}
+
+	private void mockito_MovieRepository_Delete () {
+		Mockito.doAnswer((Answer <Void>) inv -> null
+		).when(repository).delete(ArgumentMatchers.any(Movie.class));
+	}
 
 	//
 	// Create
@@ -44,40 +158,22 @@ public class MovieServiceTest {
 
 	@Test
 	public void addMovie_Success () {
-		MovieDTO movieDTO = new MovieDTO(0L, "A", 0, "A", List.of());
-		Movie    movie    = new Movie(null, 0L, "A", 0, "A", List.of());
+		MovieDTO movieDTO = ObjectGenerator.randomMovieDTO();
 
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
-			)
-		).thenReturn(Optional.empty());
-
-		Mockito.when(
-			movieMapper.toMovie(
-				ArgumentMatchers.any(MovieDTO.class)
-			)
-		).thenReturn(movie);
-
-		Mockito.when(
-			repository.save(
-				ArgumentMatchers.any(Movie.class)
-			)
-		).then(AdditionalAnswers.returnsFirstArg());
+		mockito_MovieMapper_ToMovie();
+		mockito_MovieRepository_FindByImdbId(null);
+		mockito_MovieRepository_Save();
+		mockito_ImageService_AddImage();
 
 		service.addMovie(movieDTO);
 	}
 
 	@Test
-	public void addMovie_WhenAlreadyExists () {
-		MovieDTO movieDTO = new MovieDTO(0L, "A", 0, "A", List.of());
-		Movie    movie    = new Movie(null, 0L, "A", 0, "A", List.of());
+	public void addMovie_ExceptionExists () {
+		MovieDTO movieDTO = ObjectGenerator.randomMovieDTO();
+		Movie    movie    = ObjectGenerator.of(movieDTO);
 
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
-			)
-		).thenReturn(Optional.of(movie));
+		mockito_MovieRepository_FindByImdbId(movie);
 
 		Assertions.assertThrows(
 			MovieAlreadyExistsException.class,
@@ -90,42 +186,66 @@ public class MovieServiceTest {
 	//
 
 	@Test
-	public void getMovies_FilterParams_Success () {
-		Mockito.when(
-			repository.filterByPattern(
-				ArgumentMatchers.anyString()
-			)
-		).thenReturn(Collections.emptyList());
+	public void getMovies_Success_ParamFind () {
+		mockito_MovieRepository_FindByPatternAndYear(null);
+		mockito_MovieRepository_FindByPattern(null);
+		mockito_MovieRepository_FindByYear(null);
+		mockito_MovieRepository_FindAll(null);
 
-		Mockito.when(
-			repository.filterByPatternAndYear(
-				ArgumentMatchers.anyString(),
-				ArgumentMatchers.anyInt(),
-				ArgumentMatchers.anyInt()
-			)
-		).thenReturn(Collections.emptyList());
+		Assertions.assertNotNull(service.getMovies(
+			Map.of("nonsense", "0"))
+		);
 
-		Mockito.when(
-			repository.filterByYear(
-				ArgumentMatchers.anyInt(),
-				ArgumentMatchers.anyInt()
-			)
-		).thenReturn(Collections.emptyList());
+		Assertions.assertNotNull(service.getMovies(
+			Map.of("pattern", "x")
+		));
 
-		Mockito.when(
-			repository.findAll()
-		).thenReturn(Collections.emptyList());
+		Assertions.assertNotNull(service.getMovies(
+			Map.of("startYear", "0", "endYear", "0")
+		));
 
-		Assertions.assertNotNull(service.getMovies(Map.of("x", "0", "y", "0")));
-		Assertions.assertNotNull(service.getMovies(Map.of("pattern", "x")));
-		Assertions.assertNotNull(service.getMovies(Map.of("startYear", "0", "endYear", "0")));
-		Assertions.assertNotNull(service.getMovies(Map.of("pattern", "x", "startYear", "0")));
-		Assertions.assertNotNull(service.getMovies(Map.of("pattern", "x", "endYear", "0")));
-		Assertions.assertNotNull(service.getMovies(Map.of("pattern", "x", "startYear", "0", "endYear", "0")));
+		Assertions.assertNotNull(service.getMovies(
+			Map.of("pattern", "x", "startYear", "0")
+		));
+
+		Assertions.assertNotNull(service.getMovies(
+			Map.of("pattern", "x", "endYear", "0")
+		));
+
+		Assertions.assertNotNull(service.getMovies(
+			Map.of("pattern", "x", "startYear", "0", "endYear", "0")
+		));
 	}
 
 	@Test
-	public void getMovies_FilterParams_WhenNumberFormat () {
+	public void getMovies_Success_ParamPage () {
+		mockito_MovieRepository_FindAllPageable(null);
+
+		Assertions.assertNotNull(service.getMovies(
+			Map.of("page", "1")
+		));
+
+		Assertions.assertNotNull(service.getMovies(
+			Map.of("page", "1", "size", "10")
+		));
+	}
+
+	@Test
+	public void getMovies_Success_ParamNull () {
+		mockito_MovieRepository_FindAll(null);
+
+		service.getMovies(null);
+	}
+
+	@Test
+	public void getMovies_Success_ParamEmpty () {
+		mockito_MovieRepository_FindAll(null);
+
+		service.getMovies(Map.of());
+	}
+
+	@Test
+	public void getMovies_Exception_ParamFind () {
 		Assertions.assertThrows(
 			NumberFormatException.class,
 			() -> service.getMovies(Map.of("startYear", "x"))
@@ -138,19 +258,7 @@ public class MovieServiceTest {
 	}
 
 	@Test
-	public void getMovies_PageParams_Success () {
-		Mockito.when(
-			repository.findAll(
-				ArgumentMatchers.any(PageRequest.class)
-			)
-		).thenReturn(Page.empty());
-
-		Assertions.assertNotNull(service.getMovies(Map.of("page", "1")));
-		Assertions.assertNotNull(service.getMovies(Map.of("page", "1", "size", "10")));
-	}
-
-	@Test
-	public void getMovies_PageParams_WhenNumberFormat () {
+	public void getMovies_Exception_ParamPage () {
 		Assertions.assertThrows(
 			NumberFormatException.class,
 			() -> service.getMovies(Map.of("page", "x"))
@@ -160,10 +268,7 @@ public class MovieServiceTest {
 			NumberFormatException.class,
 			() -> service.getMovies(Map.of("page", "1", "size", "x"))
 		);
-	}
 
-	@Test
-	public void getMovies_PageParams_WhenIllegalArgument () {
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
 			() -> service.getMovies(Map.of("page", "-1"))
@@ -176,68 +281,14 @@ public class MovieServiceTest {
 	}
 
 	@Test
-	public void getMovies_Success_NullParams () {
-		Mockito.when(
-			repository.findAll()
-		).thenReturn(Collections.emptyList());
+	public void getMoviesByImdbId_Success () {
+		MovieDTO movieDTO = ObjectGenerator.randomMovieDTO();
+		Movie    movie    = ObjectGenerator.of(movieDTO);
 
-		service.getMovies(null);
-	}
+		mockito_MovieRepository_FindByImdbId(movie);
+		mockito_MovieMapper_ToDTO();
 
-	@Test
-	public void getMovies_Success_EmptyParams () {
-		Mockito.when(
-			repository.findAll()
-		).thenReturn(Collections.emptyList());
-
-		service.getMovies(Map.of());
-	}
-
-	@Test
-	public void getMovies_WhenNumberFormat () {
-		Assertions.assertThrows(
-			NumberFormatException.class,
-			() -> service.getMovies(Map.of("page", "x"))
-		);
-
-		Assertions.assertThrows(
-			NumberFormatException.class,
-			() -> service.getMovies(Map.of("page", "1", "size", "x"))
-		);
-	}
-
-	@Test
-	public void getMovies_WhenIllegalArgument () {
-		Assertions.assertThrows(
-			IllegalArgumentException.class,
-			() -> service.getMovies(Map.of("page", "-1"))
-		);
-
-		Assertions.assertThrows(
-			IllegalArgumentException.class,
-			() -> service.getMovies(Map.of("page", "1", "size", "0"))
-		);
-	}
-
-
-	@Test
-	public void getMoviesById_Success () {
-		MovieDTO movieDTO = new MovieDTO(0L, "A", 0, "A", List.of());
-		Movie    movie    = new Movie(null, 0L, "A", 0, "A", List.of());
-
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
-			)
-		).thenReturn(Optional.of(movie));
-
-		Mockito.when(
-			movieMapper.toDTO(
-				ArgumentMatchers.any(Movie.class)
-			)
-		).thenReturn(movieDTO);
-
-		MovieDTO response = service.getMovieById(movieDTO.imdbId());
+		MovieDTO response = service.getMovieByImdbId(movieDTO.imdbId());
 
 		Assertions.assertNotNull(response);
 		Assertions.assertEquals(movie.getImdbId(),        response.imdbId());
@@ -248,16 +299,12 @@ public class MovieServiceTest {
 	}
 
 	@Test
-	public void getMoviesById_WhenNotFound () {
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
-			)
-		).thenReturn(Optional.empty());
+	public void getMoviesByImdbId_ExceptionNotFound () {
+		mockito_MovieRepository_FindByImdbId(null);
 
 		Assertions.assertThrows(
 			MovieNotFoundException.class,
-			() -> service.getMovieById(0L)
+			() -> service.getMovieByImdbId(0L)
 		);
 	}
 
@@ -266,31 +313,18 @@ public class MovieServiceTest {
 	//
 
 	@Test
-	public void updateMovieById_Success_NullParams () {
-		MovieDTO movieDTO = new MovieDTO(0L, "A", 0, "A", List.of());
-		Movie    movie    = new Movie(null, 0L, "A", 0, "A", List.of());
+	public void updateMovieByImdbId_Success_ParamNull () {
+		MovieDTO movieDTO = ObjectGenerator.randomMovieDTO();
+		Movie    movie    = ObjectGenerator.of(movieDTO);
+		MovieDTO paramDTO = new MovieDTO(null, null, null, null, null);
 
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
-			)
-		).thenReturn(Optional.of(movie));
+		mockito_MovieRepository_FindByImdbId(movie);
+		mockito_MovieMapper_ToDTO();
+		mockito_MovieRepository_Save();
 
-		Mockito.when(
-			movieMapper.toDTO(
-				ArgumentMatchers.any(Movie.class)
-			)
-		).thenReturn(movieDTO);
-
-		Mockito.when(
-			repository.save(
-				ArgumentMatchers.any(Movie.class)
-			)
-		).then(AdditionalAnswers.returnsFirstArg());
-
-		MovieDTO response = service.updateMovieById(
+		MovieDTO response = service.updateMovieByImdbId(
 			movie.getImdbId(),
-			new MovieDTO(movie.getImdbId(), null, null, null, null)
+			paramDTO
 		);
 
 		Assertions.assertNotNull(response);
@@ -302,37 +336,18 @@ public class MovieServiceTest {
 	}
 
 	@Test
-	public void updateMovieById_Success_SameParams () {
-		MovieDTO movieDTO = new MovieDTO(0L, "A", 0, "A", List.of());
-		Movie    movie    = new Movie(null, 0L, "A", 0, "A", List.of());
+	public void updateMovieByImdbId_Success_ParamSame () {
+		MovieDTO movieDTO = ObjectGenerator.randomMovieDTO();
+		Movie    movie    = ObjectGenerator.of(movieDTO);
 
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
-			)
-		).thenReturn(Optional.of(movie));
+		mockito_MovieRepository_FindByImdbId(movie);
+		mockito_MovieRepository_Save();
+		mockito_MovieMapper_ToDTO();
+		mockito_ImageService_AddImage();
 
-		Mockito.when(
-			movieMapper.toDTO(
-				ArgumentMatchers.any(Movie.class)
-			)
-		).thenReturn(movieDTO);
-
-		Mockito.when(
-			repository.save(
-				ArgumentMatchers.any(Movie.class)
-			)
-		).then(AdditionalAnswers.returnsFirstArg());
-
-		MovieDTO response = service.updateMovieById(
+		MovieDTO response = service.updateMovieByImdbId(
 			movie.getImdbId(),
-			new MovieDTO(
-				movie.getImdbId(),
-				movie.getTitle(),
-				movie.getYear(),
-				movie.getDescription(),
-				List.of()
-			)
+			movieDTO
 		);
 
 		Assertions.assertNotNull(response);
@@ -344,57 +359,59 @@ public class MovieServiceTest {
 	}
 
 	@Test
-	public void updateMovieById_Success_DiffParams () {
-		MovieDTO movieDTO = new MovieDTO(0L, "A", 0, "A", List.of());
-		ImageDTO imageDTO = new ImageDTO("0", new Byte[8]);
-		Movie    movie    = new Movie(null, 0L, "A", 0, "A", List.of());
-		Image    image    = new Image(null, "0", new Byte[8]);
+	public void updateMovieByImdbId_Success_ActionAdd () {
+		MovieDTO paramDTO = ObjectGenerator.randomMovieDTO();
+		Movie    movie    = ObjectGenerator.randomMovie();
 
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
-			)
-		).thenReturn(Optional.of(movie));
+		mockito_MovieRepository_FindByImdbId(movie);
+		mockito_MovieRepository_Save();
+		mockito_MovieMapper_ToDTO();
+		mockito_ImageService_AddImage();
 
-		Mockito.when(
-			movieMapper.toDTO(
-				ArgumentMatchers.any(Movie.class)
-			)
-		).thenReturn(movieDTO);
+		int expectedImages =
+			movie.getImages().size() +
+			paramDTO.images().size();
 
-		Mockito.when(
-			imageMapper.toImage(
-				ArgumentMatchers.any(ImageDTO.class)
-			)
-		).thenReturn(image);
-
-		Mockito.when(
-			repository.save(
-				ArgumentMatchers.any(Movie.class)
-			)
-		).then(AdditionalAnswers.returnsFirstArg());
-
-		MovieDTO response = service.updateMovieById(
+		MovieDTO response = service.updateMovieByImdbId(
 			movie.getImdbId(),
-			new MovieDTO(1L, "B", 1, "B", List.of(imageDTO))
+			paramDTO,
+			ImageAction.ADD
 		);
 
 		Assertions.assertNotNull(response);
+
+		Assertions.assertEquals(paramDTO.title(),       response.title());
+		Assertions.assertEquals(paramDTO.year(),        response.year());
+		Assertions.assertEquals(paramDTO.description(), response.description());
+		Assertions.assertEquals(expectedImages,			response.images().size());
 	}
 
 	@Test
-	public void updateMovieById_WhenNotFound () {
-		MovieDTO movieDTO = new MovieDTO(0L, "A", 0, "A", List.of());
+	public void updateMovieByImdbId_ExceptionNotSupported () {
+		MovieDTO movieDTO = ObjectGenerator.randomMovieDTO();
+		Movie    movie    = ObjectGenerator.of(movieDTO);
 
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
+		mockito_MovieRepository_FindByImdbId(movie);
+
+		Assertions.assertThrows(
+			ImageActionNotSupportedException.class,
+			() -> service.updateMovieByImdbId(
+				movieDTO.imdbId(),
+				movieDTO,
+				ImageAction.IGNORE
 			)
-		).thenReturn(Optional.empty());
+		);
+	}
+
+	@Test
+	public void updateMovieByImdbId_ExceptionNotFound () {
+		MovieDTO movieDTO = ObjectGenerator.randomMovieDTO();
+
+		mockito_MovieRepository_FindByImdbId(null);
 
 		Assertions.assertThrows(
 			MovieNotFoundException.class,
-			() -> service.updateMovieById(movieDTO.imdbId(), movieDTO)
+			() -> service.updateMovieByImdbId(movieDTO.imdbId(), movieDTO)
 		);
 	}
 
@@ -404,43 +421,29 @@ public class MovieServiceTest {
 
 	@Test
 	public void deleteMovies_Success () {
-		Mockito.doAnswer(
-			(Answer <Void>) inv -> null
-		).when(repository).deleteAll();
+		mockito_MovieRepository_DeleteAll();
+		mockito_ImageService_DeleteImages();
 
 		service.deleteMovies();
 	}
 
 	@Test
-	public void deleteMovieById_Success () {
-		Movie movie = new Movie(null, 0L, "A", 0, "A", List.of());
+	public void deleteMovieByImdbId_Success () {
+		Movie movie = ObjectGenerator.randomMovie();
 
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
-			)
-		).thenReturn(Optional.of(movie));
+		mockito_MovieRepository_FindByImdbId(movie);
+		mockito_MovieRepository_Delete();
 
-		Mockito.doAnswer(
-			(Answer <Void>) inv -> null
-		).when(repository).delete(
-			ArgumentMatchers.any(Movie.class)
-		);
-
-		service.deleteMovieById(0L);
+		service.deleteMovieByImdbId(movie.getImdbId());
 	}
 
 	@Test
-	public void deleteMovieById_WhenNotFound () {
-		Mockito.when(
-			repository.findByImdbId(
-				ArgumentMatchers.anyLong()
-			)
-		).thenReturn(Optional.empty());
+	public void deleteMovieByImdbId_Exception () {
+		mockito_MovieRepository_FindByImdbId(null);
 
 		Assertions.assertThrows(
 			MovieNotFoundException.class,
-			() -> service.deleteMovieById(1L)
+			() -> service.deleteMovieByImdbId(0L)
 		);
 	}
 

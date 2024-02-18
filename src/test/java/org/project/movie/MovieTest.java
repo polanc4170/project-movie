@@ -14,29 +14,34 @@ public class MovieTest {
 		Movie movie = new Movie();
 
 		Assertions.assertNotNull(movie);
-		Assertions.assertTrue(movie.getImages().isEmpty());
 		Assertions.assertNull(movie.getId());
 		Assertions.assertNull(movie.getImdbId());
 		Assertions.assertNull(movie.getYear());
 		Assertions.assertNull(movie.getTitle());
 		Assertions.assertNull(movie.getDescription());
+		Assertions.assertTrue(movie.getImages().isEmpty());
 	}
 
 	@Test
 	public void createMovieAllArgs () {
-		Movie movie = new Movie(null, 1L, "Title", 2000, "Description", List.of(
-			new Image(null, "uuid-0", new Byte[8]),
-			new Image(null, "uuid-1", new Byte[8])
+		Movie movie = new Movie(null, 0L, "T", 2000, "D", List.of(
+			new Image(null, 0L, 0L, new Byte[8]),
+			new Image(null, 1L, 1L, new Byte[8])
 		));
 
 		Assertions.assertNotNull(movie);
 		Assertions.assertNull(movie.getId());
-		Assertions.assertEquals(1L,            movie.getImdbId());
-		Assertions.assertEquals("Title",       movie.getTitle());
-		Assertions.assertEquals(2000,          movie.getYear());
-		Assertions.assertEquals("Description", movie.getDescription());
+		Assertions.assertNotNull(movie.getImdbId());
+		Assertions.assertNotNull(movie.getYear());
+		Assertions.assertNotNull(movie.getTitle());
+		Assertions.assertNotNull(movie.getDescription());
 		Assertions.assertFalse(movie.getImages().isEmpty());
-		Assertions.assertEquals(2,             movie.getImages().size());
+
+		Assertions.assertEquals(0,    movie.getImdbId());
+		Assertions.assertEquals("T",  movie.getTitle());
+		Assertions.assertEquals(2000, movie.getYear());
+		Assertions.assertEquals("D",  movie.getDescription());
+		Assertions.assertEquals(2,    movie.getImages().size());
 	}
 
 	@Test
@@ -44,23 +49,28 @@ public class MovieTest {
 		Movie movie = new Movie();
 
 		movie.setId(null);
-		movie.setImdbId(1L);
-		movie.setTitle("Title");
+		movie.setImdbId(0L);
+		movie.setTitle("T");
 		movie.setYear(2000);
-		movie.setDescription("Description");
+		movie.setDescription("D");
 		movie.setImages(List.of(
-			new Image(null, "uuid-0", new Byte[8]),
-			new Image(null, "uuid-1", new Byte[8])
+			new Image(null, 0L, 0L, new Byte[8]),
+			new Image(null, 1L, 1L, new Byte[8])
 		));
 
 		Assertions.assertNotNull(movie);
 		Assertions.assertNull(movie.getId());
-		Assertions.assertEquals(1L,            movie.getImdbId());
-		Assertions.assertEquals("Title",       movie.getTitle());
-		Assertions.assertEquals(2000,          movie.getYear());
-		Assertions.assertEquals("Description", movie.getDescription());
+		Assertions.assertNotNull(movie.getImdbId());
+		Assertions.assertNotNull(movie.getYear());
+		Assertions.assertNotNull(movie.getTitle());
+		Assertions.assertNotNull(movie.getDescription());
 		Assertions.assertFalse(movie.getImages().isEmpty());
-		Assertions.assertEquals(2,             movie.getImages().size());
+
+		Assertions.assertEquals(0,    movie.getImdbId());
+		Assertions.assertEquals("T",  movie.getTitle());
+		Assertions.assertEquals(2000, movie.getYear());
+		Assertions.assertEquals("D",  movie.getDescription());
+		Assertions.assertEquals(2,    movie.getImages().size());
 	}
 
 }

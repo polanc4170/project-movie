@@ -11,6 +11,7 @@ public class ImageMapper {
 	public ImageDTO toDTO (Image image) {
 		return new ImageDTO(
 			image.getUuid(),
+			image.getImdbId(),
 			image.getBytes()
 		);
 	}
@@ -19,6 +20,7 @@ public class ImageMapper {
 		Image image = new Image();
 
 		image.setUuid(dto.uuid());
+		image.setImdbId(dto.imdbId());
 		image.setBytes(dto.bytes());
 
 		return image;

@@ -1,4 +1,4 @@
-package org.project.movie;
+package org.project.movie.exception;
 
 public class MovieAlreadyExistsException extends RuntimeException {
 

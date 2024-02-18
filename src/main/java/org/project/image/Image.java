@@ -29,8 +29,11 @@ public class Image {
 	private Long id;
 
 	@NaturalId
-	@Column(nullable = false, unique = true, length = 64)
-	private String uuid;
+	@Column(nullable = false, unique = true)
+	private Long uuid;
+
+	@Column(nullable = false)
+	private Long imdbId;
 
 	@Lob
 	@Basic(fetch = FetchType.LAZY)

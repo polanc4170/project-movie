@@ -1,11 +1,18 @@
 package org.project.movie;
 
-import org.project.image.ImageMapper;
+import org.project.image.Image;
+import org.project.image.ImageAction;
+import org.project.image.exception.ImageActionNotSupportedException;
+import org.project.image.ImageDTO;
+import org.project.image.ImageService;
+import org.project.movie.exception.MovieAlreadyExistsException;
+import org.project.movie.exception.MovieNotFoundException;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,16 +23,16 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class MovieService {
 
-	private final MovieRepository repository;
+	private final MovieRepository movieRepository;
 	private final MovieMapper     movieMapper;
-	private final ImageMapper     imageMapper;
+	private final ImageService    imageService;
 
 	//
 	// Create
 	//
 
 	public void addMovie (MovieDTO movie) {
-		Optional<Movie> dbOptMovie = repository.findByImdbId(movie.imdbId());
+		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(movie.imdbId());
 
 		if (dbOptMovie.isPresent()) {
 			throw new MovieAlreadyExistsException(
@@ -33,7 +40,11 @@ public class MovieService {
 			);
 		}
 
-		repository.save(movieMapper.toMovie(movie));
+		movie.images().forEach(
+			imageService::addImage
+		);
+
+		movieRepository.save(movieMapper.toMovie(movie));
 	}
 
 	//
@@ -41,7 +52,7 @@ public class MovieService {
 	//
 
 	private Page<MovieDTO> getMoviesByPage (Map<String, String> parameters) {
-		return repository.findAll(
+		return movieRepository.findAll(
 			PageRequest.of(
 				Integer.parseInt(parameters.getOrDefault("page", "0")),
 				Integer.parseInt(parameters.getOrDefault("size", "10"))
@@ -61,12 +72,12 @@ public class MovieService {
 			Integer startYear = Integer.parseInt(parameters.getOrDefault("startYear",    "0"));
 			Integer endYear   = Integer.parseInt(parameters.getOrDefault(  "endYear", "9999"));
 
-			if (pattern != null) movies = repository.filterByPatternAndYear(pattern, startYear, endYear);
-			else                 movies = repository.filterByYear(startYear, endYear);
+			if (pattern != null) movies = movieRepository.findByPatternAndYear(pattern, startYear, endYear);
+			else                 movies = movieRepository.findByYear(startYear, endYear);
 		}
 		else {
-			if (pattern != null) movies = repository.filterByPattern(pattern);
-			else                 movies = repository.findAll();
+			if (pattern != null) movies = movieRepository.findByPattern(pattern);
+			else                 movies = movieRepository.findAll();
 		}
 
 		return movies.stream().map(movieMapper::toDTO).toList();
@@ -81,15 +92,15 @@ public class MovieService {
 			return getMoviesByFilter(parameters);
 		}
 
-		return repository.findAll().stream().map(movieMapper::toDTO).toList();
+		return movieRepository.findAll().stream().map(movieMapper::toDTO).toList();
 	}
 
-	public MovieDTO getMovieById (Long id) {
-		Optional<Movie> dbOptMovie = repository.findByImdbId(id);
+	public MovieDTO getMovieByImdbId (Long imdbId) {
+		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(imdbId);
 
 		if (dbOptMovie.isEmpty()) {
 			throw new MovieNotFoundException(
-				"Movie IMDB_ID '%d' does not exist.".formatted(id)
+				"Movie IMDB_ID '%d' does not exist.".formatted(imdbId)
 			);
 		}
 
@@ -100,12 +111,26 @@ public class MovieService {
 	// Update
 	//
 
-	public MovieDTO updateMovieById (Long id, MovieDTO movie) {
-		Optional<Movie> dbOptMovie = repository.findByImdbId(id);
+	private void updateMovieImagesWithAdd (Movie movie, List<ImageDTO> imageDTOs) {
+		List<Image> images = new ArrayList<>(
+			movie.getImages()
+		);
+
+		images.addAll(
+			imageDTOs.stream().map(
+				imageService::addImage
+			).toList()
+		);
+
+		movie.setImages(images);
+	}
+
+	public MovieDTO updateMovieByImdbId (Long imdbId, MovieDTO movie, ImageAction imageAction) {
+		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(imdbId);
 
 		if (dbOptMovie.isEmpty()) {
 			throw new MovieNotFoundException(
-				"Movie IMDB_ID '%d' does not exist.".formatted(id)
+				"Movie IMDB_ID '%d' does not exist.".formatted(imdbId)
 			);
 		}
 
@@ -124,14 +149,21 @@ public class MovieService {
 		}
 
 		if (movie.images() != null && !movie.images().isEmpty()) {
-			dbMovie.setImages(movie.images()
-				.stream()
-				.map(imageMapper::toImage)
-				.toList()
-			);
+			if (imageAction == ImageAction.ADD) {
+				updateMovieImagesWithAdd(dbMovie, movie.images());
+			}
+			else {
+				throw new ImageActionNotSupportedException(
+					"Image ACTION '%s' is not supported".formatted(imageAction.name())
+				);
+			}
 		}
 
-		return movieMapper.toDTO(repository.save(dbMovie));
+		return movieMapper.toDTO(movieRepository.save(dbMovie));
+	}
+
+	public MovieDTO updateMovieByImdbId (Long imdbId, MovieDTO movie) {
+		return updateMovieByImdbId(imdbId, movie, ImageAction.ADD);
 	}
 
 	//
@@ -139,19 +171,23 @@ public class MovieService {
 	//
 
 	public void deleteMovies () {
-		repository.deleteAll();
+		imageService.deleteImages();
+		movieRepository.deleteAll();
 	}
 
-	public void deleteMovieById (Long id) {
-		Optional<Movie> dbOptMovie = repository.findByImdbId(id);
+	public void deleteMovieByImdbId (Long imdbId) {
+		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(imdbId);
 
 		if (dbOptMovie.isEmpty()) {
 			throw new MovieNotFoundException(
-				"Movie IMDB_ID '%d' does not exist.".formatted(id)
+				"Movie IMDB_ID '%d' does not exist.".formatted(imdbId)
 			);
 		}
 
-		repository.delete(dbOptMovie.get());
+		Movie dbMovie = dbOptMovie.get();
+
+		imageService.deleteImagesByImdbId(dbMovie.getImdbId());
+		movieRepository.delete(dbMovie);
 	}
 
 }

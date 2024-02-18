@@ -1,4 +1,4 @@
-package org.project.image;
+package org.project.image.exception;
 
 public class ImageNotFoundException extends RuntimeException {
 

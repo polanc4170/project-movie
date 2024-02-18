@@ -1,5 +1,6 @@
 package org.project.movie;
 
+import org.project.ObjectGenerator;
 import org.project.image.Image;
 import org.project.image.ImageDTO;
 import org.project.image.ImageMapper;
@@ -13,9 +14,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.UUID;
-
 @ExtendWith(MockitoExtension.class)
 public class MovieMapperTest {
 
@@ -27,17 +25,14 @@ public class MovieMapperTest {
 
 	@Test
 	public void toMovie () {
-		MovieDTO movieDTO = new MovieDTO(0L, "A", 0, "A", List.of(
-			new ImageDTO("0", new Byte[8]),
-			new ImageDTO("1", new Byte[8])
-		));
+		MovieDTO movieDTO = ObjectGenerator.randomMovieDTO();
 
 		Mockito.when(
 			imageMapper.toImage(
 				ArgumentMatchers.any(ImageDTO.class)
 			)
 		).thenReturn(
-			new Image(null, UUID.randomUUID().toString(), new Byte[8])
+			ObjectGenerator.randomImage()
 		);
 
 		Movie movie = movieMapper.toMovie(movieDTO);
@@ -52,17 +47,14 @@ public class MovieMapperTest {
 
 	@Test
 	public void toDTO () {
-		Movie movie = new Movie(null, 0L, "A", 0, "A", List.of(
-			new Image(null, "0", new Byte[8]),
-			new Image(null, "1", new Byte[8])
-		));
+		Movie movie = ObjectGenerator.randomMovie();
 
 		Mockito.when(
 			imageMapper.toDTO(
 				ArgumentMatchers.any(Image.class)
 			)
 		).thenReturn(
-			new ImageDTO(UUID.randomUUID().toString(), new Byte[8])
+			ObjectGenerator.randomImageDTO()
 		);
 
 		MovieDTO movieDTO = movieMapper.toDTO(movie);
