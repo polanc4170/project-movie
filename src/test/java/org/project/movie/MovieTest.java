@@ -1,6 +1,6 @@
 package org.project.movie;
 
-import org.project.image.Image;
+import org.project.utils.ObjectGenerator;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,7 +10,7 @@ import java.util.List;
 public class MovieTest {
 
 	@Test
-	public void createMovieNoArgs () {
+	public void createMovie_ArgsNone () {
 		Movie movie = new Movie();
 
 		Assertions.assertNotNull(movie);
@@ -23,10 +23,10 @@ public class MovieTest {
 	}
 
 	@Test
-	public void createMovieAllArgs () {
+	public void createMovie_ArgsAll () {
 		Movie movie = new Movie(null, 0L, "T", 2000, "D", List.of(
-			new Image(null, 0L, 0L, new Byte[8]),
-			new Image(null, 1L, 1L, new Byte[8])
+			ObjectGenerator.randomImage(),
+			ObjectGenerator.randomImage()
 		));
 
 		Assertions.assertNotNull(movie);
@@ -45,7 +45,7 @@ public class MovieTest {
 	}
 
 	@Test
-	public void checkSetterAndGetter () {
+	public void createMovie_Lombok () {
 		Movie movie = new Movie();
 
 		movie.setId(null);
@@ -54,8 +54,8 @@ public class MovieTest {
 		movie.setYear(2000);
 		movie.setDescription("D");
 		movie.setImages(List.of(
-			new Image(null, 0L, 0L, new Byte[8]),
-			new Image(null, 1L, 1L, new Byte[8])
+			ObjectGenerator.randomImage(),
+			ObjectGenerator.randomImage()
 		));
 
 		Assertions.assertNotNull(movie);

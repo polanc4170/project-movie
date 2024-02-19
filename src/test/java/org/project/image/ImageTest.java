@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 public class ImageTest {
 
 	@Test
-	public void createImageNoArgs () {
+	public void createImage_ArgsNone () {
 		Image image = new Image();
 
 		Assertions.assertNotNull(image);
@@ -17,7 +17,7 @@ public class ImageTest {
 	}
 
 	@Test
-	public void createImageAllArgs () {
+	public void createImage_ArgsAll () {
 		Image image = new Image(null, 0L, 0L, new Byte[8]);
 
 		Assertions.assertNotNull(image);
@@ -32,7 +32,7 @@ public class ImageTest {
 	}
 
 	@Test
-	public void checkSetterAndGetter () {
+	public void createMovie_Lombok () {
 		Image image = new Image();
 
 		image.setId(null);

@@ -1,6 +1,6 @@
 package org.project.movie;
 
-import org.project.ObjectGenerator;
+import org.project.utils.ObjectGenerator;
 import org.project.movie.exception.MovieAlreadyExistsException;
 import org.project.movie.exception.MovieNotFoundException;
 

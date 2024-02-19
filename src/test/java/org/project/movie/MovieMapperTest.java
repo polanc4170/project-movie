@@ -1,6 +1,6 @@
 package org.project.movie;
 
-import org.project.ObjectGenerator;
+import org.project.utils.ObjectGenerator;
 import org.project.image.Image;
 import org.project.image.ImageDTO;
 import org.project.image.ImageMapper;

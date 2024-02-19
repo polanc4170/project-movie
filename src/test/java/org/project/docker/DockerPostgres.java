@@ -1,4 +1,4 @@
-package org.project.container;
+package org.project.docker;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -10,7 +10,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class PostgresDocker {
+public class DockerPostgres {
 
 	@SuppressWarnings("rawtypes")
 	@Container

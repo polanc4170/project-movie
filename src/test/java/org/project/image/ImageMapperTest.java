@@ -1,6 +1,6 @@
 package org.project.image;
 
-import org.project.ObjectGenerator;
+import org.project.utils.ObjectGenerator;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

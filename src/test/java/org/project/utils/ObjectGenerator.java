@@ -1,4 +1,4 @@
-package org.project;
+package org.project.utils;
 
 import org.project.image.Image;
 import org.project.image.ImageDTO;
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unused")
 public final class ObjectGenerator {
 
 	private static final UniformRandomProvider random = RandomSource.XO_RO_SHI_RO_128_PP.create();
@@ -52,7 +53,7 @@ public final class ObjectGenerator {
 		).toList();
 	}
 
-	private static List<ImageDTO> randomImagesDTO () {
+	private static List<ImageDTO> randomImageDTOs () {
 		return Stream.generate(
 			ObjectGenerator::randomImageDTO
 		).limit(
@@ -66,7 +67,7 @@ public final class ObjectGenerator {
 			randomTitle(),
 			randomYear(),
 			randomDescription(),
-			randomImagesDTO()
+			randomImageDTOs()
 		);
 	}
 
