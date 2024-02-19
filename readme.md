@@ -6,11 +6,11 @@ This project is a backend application for movies management via REST API. It all
 
 ### Setup with GIT
 
-1. Clone the repository with the following git command:
+- Clone the repository with the following git command
 
 ```git clone https://github.com/polanc4170/project-movie.git```
 
-2. After the project has been cloned, go into ```..\resource\application.properties``` and update the field according to your own database access:
+- After the project has been cloned, go into ```..\resource\application.properties``` and update the field according to your own database access:
 
 ```
 spring.datasource.url      = <DB_URL>
@@ -18,11 +18,15 @@ spring.datasource.username = <DB_USERNAME>
 spring.datasource.password = <DB_PASSWORD>
 ```
 
-3. Run the application, which will then run on ```http://localhost:8080```
+- Run the application, which will then run on
+
+```http://localhost:8080```
 
 ## Data
 
-![Alt text](/res/db_diagram.png?raw=true "")
+The application consists of two entities ```Movie``` and ```Image``` and their relationship and structure drawn with [DrawSQL](https://drawsql.app/) is as follows:
+
+![](/res/db_diagram.png?raw=true "")
 
 ## API Endpoints
 

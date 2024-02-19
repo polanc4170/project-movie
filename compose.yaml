@@ -1,0 +1,26 @@
+services:
+    service:
+        image: 'docker-spring-boot-postgres:latest'
+        container_name: 'project-app'
+        restart: always
+        build: .
+        ports:
+            - 8080:8080
+        depends_on:
+            - database
+        environment:
+            SPRING_DATASOURCE_URL: jdbc:postgresql://db_src:5432
+            SPRING_DATASOURCE_USERNAME: postgres
+            SPRING_DATASOURCE_PASSWORD: admin
+            SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+
+    database:
+        container_name: 'project-database'
+        image: 'postgres:latest'
+        restart: always
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_DB: db_src
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: admin
