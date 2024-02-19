@@ -1,25 +1,26 @@
 services:
     service:
-        image: 'docker-spring-boot-postgres:latest'
-        container_name: 'project-app'
-        restart: always
+        image: 'application:latest'
+        container_name: 'project-movie-app'
         build: .
         ports:
             - 8080:8080
         depends_on:
             - database
         environment:
-            SPRING_DATASOURCE_URL: jdbc:postgresql://db_src:5432
+            SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/db_src
             SPRING_DATASOURCE_USERNAME: postgres
             SPRING_DATASOURCE_PASSWORD: admin
             SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
 
     database:
-        container_name: 'project-database'
+        container_name: 'project-movie-database'
         image: 'postgres:latest'
         restart: always
         ports:
             - 5432:5432
+        expose :
+            - 5432
         environment:
             POSTGRES_DB: db_src
             POSTGRES_USER: postgres
