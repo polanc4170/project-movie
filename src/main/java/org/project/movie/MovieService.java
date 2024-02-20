@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class MovieService {
 	// Create
 	//
 
-	@Transactional
+	@Transactional(rollbackFor = SQLException.class)
 	public void addMovie (MovieDTO movie) {
 		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(movie.imdbId());
 
@@ -139,7 +140,7 @@ public class MovieService {
 		movie.setImages(images);
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = SQLException.class)
 	public MovieDTO updateMovieByImdbId (Long imdbId, MovieDTO movie, ImageAction imageAction) {
 		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(imdbId);
 
@@ -176,7 +177,7 @@ public class MovieService {
 		return movieMapper.toDTO(movieRepository.save(dbMovie));
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = SQLException.class)
 	public MovieDTO updateMovieByImdbId (Long imdbId, MovieDTO movie) {
 		return updateMovieByImdbId(imdbId, movie, ImageAction.ADD);
 	}
@@ -185,13 +186,13 @@ public class MovieService {
 	// Delete
 	//
 
-	@Transactional
+	@Transactional(rollbackFor = SQLException.class)
 	public void deleteMovies () {
 		imageService.deleteImages();
 		movieRepository.deleteAll();
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = SQLException.class)
 	public void deleteMovieByImdbId (Long imdbId) {
 		Optional<Movie> dbOptMovie = movieRepository.findByImdbId(imdbId);
 

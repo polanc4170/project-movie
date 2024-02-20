@@ -79,7 +79,7 @@ public class MovieController {
 	}
 
 	@GetMapping(path = "/{id}", produces = "application/json")
-	public ResponseEntity<Object> getMovieById (@PathVariable Long id) {
+	public ResponseEntity<Object> getMovieByImdbId (@PathVariable Long id) {
 		try {
 			return ResponseEntity.status(OK).body(
 				service.getMovieByImdbId(id)
@@ -97,7 +97,7 @@ public class MovieController {
 	//
 
 	@PutMapping(path = "/{id}", produces = "application/json", consumes = "application/json")
-	public ResponseEntity<Object> updateMovieById (@PathVariable Long id, @RequestBody MovieDTO movie) {
+	public ResponseEntity<Object> updateMovieByImdbId (@PathVariable Long id, @RequestBody MovieDTO movie) {
 		try {
 			return ResponseEntity.status(OK).body(
 				service.updateMovieByImdbId(id, movie)
@@ -124,7 +124,7 @@ public class MovieController {
 	}
 
 	@DeleteMapping(path = "/{id}", produces = "application/json")
-	public ResponseEntity<Object> deleteMovieById (@PathVariable Long id) {
+	public ResponseEntity<Object> deleteMovieByImdbId (@PathVariable Long id) {
 		try {
 			service.deleteMovieByImdbId(id);
 

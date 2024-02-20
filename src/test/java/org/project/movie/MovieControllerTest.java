@@ -154,7 +154,7 @@ public class MovieControllerTest {
 			ArgumentMatchers.anyLong()
 		)).thenReturn(movieDTO);
 
-		ResponseEntity<Object> response = controller.getMovieById(movieDTO.imdbId());
+		ResponseEntity<Object> response = controller.getMovieByImdbId(movieDTO.imdbId());
 
 		Assertions.assertNotNull(response.getStatusCode());
 		Assertions.assertNotNull(response.getBody());
@@ -173,7 +173,7 @@ public class MovieControllerTest {
 			ArgumentMatchers.anyLong()
 		);
 
-		ResponseEntity<Object> response = controller.getMovieById(0L);
+		ResponseEntity<Object> response = controller.getMovieByImdbId(0L);
 
 		Assertions.assertNotNull(response.getStatusCode());
 		Assertions.assertNotNull(response.getBody());
@@ -197,7 +197,7 @@ public class MovieControllerTest {
 			ArgumentMatchers.any(MovieDTO.class)
 		)).thenReturn(movieDTO);
 
-		ResponseEntity<Object> response = controller.updateMovieById(0L, movieDTO);
+		ResponseEntity<Object> response = controller.updateMovieByImdbId(0L, movieDTO);
 
 		Assertions.assertNotNull(response.getStatusCode());
 		Assertions.assertNotNull(response.getBody());
@@ -219,7 +219,7 @@ public class MovieControllerTest {
 			ArgumentMatchers.any(MovieDTO.class)
 		);
 
-		ResponseEntity<Object> response = controller.updateMovieById(0L, movieDTO);
+		ResponseEntity<Object> response = controller.updateMovieByImdbId(0L, movieDTO);
 
 		Assertions.assertNotNull(response.getStatusCode());
 		Assertions.assertNotNull(response.getBody());
@@ -259,7 +259,7 @@ public class MovieControllerTest {
 			ArgumentMatchers.any(Long.class)
 		);
 
-		ResponseEntity<Object> response = controller.deleteMovieById(1L);
+		ResponseEntity<Object> response = controller.deleteMovieByImdbId(1L);
 
 		Assertions.assertNotNull(response.getStatusCode());
 		Assertions.assertNull(response.getBody());
@@ -278,7 +278,7 @@ public class MovieControllerTest {
 			ArgumentMatchers.anyLong()
 		);
 
-		ResponseEntity<Object> response = controller.deleteMovieById(0L);
+		ResponseEntity<Object> response = controller.deleteMovieByImdbId(0L);
 
 		Assertions.assertNotNull(response.getStatusCode());
 		Assertions.assertNotNull(response.getBody());
