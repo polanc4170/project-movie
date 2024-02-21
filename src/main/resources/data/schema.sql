@@ -15,7 +15,7 @@ DROP TABLE IF EXISTS movies_images CASCADE;
 CREATE TABLE images (
 	id			BIGSERIAL   NOT NULL,
 	uuid		VARCHAR(64) NOT NULL UNIQUE,
-    imdb_id     BIGINT		NOT NULL,
+	imdb_id     BIGINT		NOT NULL,
 	bytes		OID,
 	PRIMARY KEY (id)
 );

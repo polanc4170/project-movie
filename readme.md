@@ -20,9 +20,21 @@ spring.datasource.username = <DB_USERNAME>
 spring.datasource.password = <DB_PASSWORD>
 ```
 
+- Additionally, within the ```pom.xml```, it is essential to comment out the specified dependency to prevent unintentional Docker utilization during execution:
+
+```
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-docker-compose</artifactId>
+	<version>${version.spring.boot}</version>
+</dependency>
+```
+
 - Run the application, which will then run on
 
-```http://localhost:8080```
+```
+http://localhost:8080
+```
 
 ### Setup with Docker
 
@@ -34,10 +46,16 @@ mvn install
 docker compose up
 ```
 
-- With this the application will create a docker container with the database running on port ```5432``` and the server running on port ```8080```. When you are done with the application, by entering the following command, the containers will exit:
+- With this the application will create a Docker container with the database running on port ```5432``` and the server running on port ```8080```. When you are done with the application, by entering the following command, the containers will exit:
 
 ```
 docker compose down
+```
+
+- Please be aware that sometimes, despite running the above command and closing Docker, the ```wmmem``` process may persist in the background, consuming memory resources. While this issue may be specific to my environment, it can be resolved by executing the following command:
+
+```
+wsl --shutdown
 ```
 
 ## Data
